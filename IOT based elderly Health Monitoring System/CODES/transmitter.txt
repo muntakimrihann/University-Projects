@@ -1,0 +1,65 @@
+//Include Libraries
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <Wire.h>
+#include "I2Cdev.h"
+#include <MPU6050.h>
+
+//create an RF24 object
+RF24 radio(D3, D4);  // CE, CSN
+
+//address through which two modules communicate.
+const byte address[6] = "00001";
+
+// for jayro
+MPU6050 mpu;
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
+int x, y;
+
+const char text[] = "0";
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  mpu.initialize();
+}
+void loop() {
+
+  mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  x = map(ax, -17000, 17000, 300, 400);  //Send X axis data
+  y = map(ay, -17000, 17000, 100, 200);  //Send Y axis data
+
+  Serial.print(x);
+  Serial.print("|");
+  Serial.println(y);
+
+  if (x < 360 && x > 330 && y < 180 && y > 130) {
+    Serial.println("0");
+    const char text[] = "0";
+  }
+
+  if (x > 290 && x < 320 && y > 135 && y < 165) {
+    Serial.println("1");
+    const char text[] = "1";
+  }
+
+  if (x > 380 && x < 410 && y > 135 && y < 165) {
+    Serial.println("2");
+    const char text[] = "2";
+  }
+
+  if (x > 330 && x < 360 && y > 80 && y < 120) {
+    Serial.println("3");
+    const char text[] = "3";
+  }
+
+  if (x > 330 && x < 370 && y > 180 && y < 220) {
+    Serial.println("4");
+    const char text[] = "4";
+  }
+radio.write(&text, sizeof(text));
+
+  delay(1000);
+}

@@ -1,0 +1,113 @@
+//Include Libraries
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <LiquidCrystal_I2C.h>
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+
+LiquidCrystal_I2C lcd(0x27, 20, 4);  // set the LCD address to 0x27 for a 16 chars and 2 line display
+
+//create an RF24 object
+RF24 radio(2, 4);  // CE, CSN
+char text[32] = { 0 };
+String text1;
+
+//address through which two modules communicate.
+const byte address[6] = "00001";
+
+char auth[] = "FeO-wRv73AAgooD8lLI0nq8tCOSCDw7K";
+
+// Your WiFi credentials.
+// Set password to "" for open networks.
+char ssid[] = "student";
+char pass[] = "iotstudent";
+
+int buzzer = 15;
+
+
+void setup() {
+  // while (!Serial)
+  // ;
+  Serial.begin(9600);
+  pinMode(buzzer, OUTPUT);
+
+  lcd.init();  // initialize the lcd
+  lcd.backlight();
+
+  radio.begin();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Connecting with");
+  lcd.setCursor(0, 1);
+  lcd.print("Server....");
+  delay(2000);
+  Blynk.begin(auth, ssid, pass);
+  lcd.clear();
+}
+
+void loop() {
+  Blynk.run();
+  //Read the data if available in buffer
+  if (radio.available()) {
+    radio.read(&text);
+    text1 = text;
+    Serial.println(text);
+  }
+
+  if (text1 == "0") {
+    digitalWrite(buzzer,LOW);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Display Unit");
+    lcd.setCursor(0, 1);
+    lcd.print("No Input");
+    Blynk.virtualWrite(V0, "No Input");
+    Blynk.virtualWrite(V1, 0);
+    delay(1000);
+  }
+
+  if (text1 == "1") {
+    digitalWrite(buzzer,HIGH);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("I Need Food.");
+    Blynk.virtualWrite(V0, "I Need Food.");
+    Blynk.virtualWrite(V1, 1);
+    delay(1000);
+  }
+
+  if (text1 == "2") {
+    digitalWrite(buzzer,HIGH);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("I Need Water.");
+    Blynk.virtualWrite(V0, "I Need Water.");
+    Blynk.virtualWrite(V1, 2);
+    delay(1000);
+  }
+
+  if (text1 == "3") {
+    digitalWrite(buzzer,HIGH);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Call Attendent.");
+    Blynk.virtualWrite(V0, "Call Attendent.");
+    Blynk.virtualWrite(V1, 3);
+    delay(1000);
+  }
+
+  if (text1 == "4") {
+    digitalWrite(buzzer,HIGH);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Some Problem.");
+    Blynk.virtualWrite(V0, "Some Problem.");
+    Blynk.virtualWrite(V1, 4);
+    delay(1000);
+  }
+
+
+  text[32] = { 0 };
+}
